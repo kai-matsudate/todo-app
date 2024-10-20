@@ -1,107 +1,146 @@
-import { Github, Linkedin, Mail } from "lucide-react"
-import Image from "next/image"
-import Link from "next/link"
+'use client'
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useState } from 'react'
+import { Plus, Edit2, Trash2, Check, X } from 'lucide-react'
+import { Button } from "../components/Button"
+
+type Todo = {
+  id: number
+  text: string
+  completed: boolean
+}
 
 export default function HomePage() {
+  const [todos, setTodos] = useState<Todo[]>([])
+  const [newTodo, setNewTodo] = useState('')
+  const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all')
+  const [editingId, setEditingId] = useState<number | null>(null)
+  const [editText, setEditText] = useState('')
+
+  const addTodo = () => {
+    if (newTodo.trim() !== '') {
+      setTodos([...todos, { id: Date.now(), text: newTodo, completed: false }])
+      setNewTodo('')
+    }
+  }
+
+  const deleteTodo = (id: number) => {
+    setTodos(todos.filter(todo => todo.id !== id))
+  }
+
+  const toggleTodo = (id: number) => {
+    setTodos(todos.map(todo =>
+      todo.id === id ? { ...todo, completed: !todo.completed } : todo
+    ))
+  }
+
+  const startEditing = (id: number, text: string) => {
+    setEditingId(id)
+    setEditText(text)
+  }
+
+  const saveEdit = () => {
+    if (editingId !== null) {
+      setTodos(todos.map(todo =>
+        todo.id === editingId ? { ...todo, text: editText } : todo
+      ))
+      setEditingId(null)
+    }
+  }
+
+  const cancelEdit = () => {
+    setEditingId(null)
+    setEditText('')
+  }
+
+  const filteredTodos = todos.filter(todo => {
+    if (filter === 'active') return !todo.completed
+    if (filter === 'completed') return todo.completed
+    return true
+  })
+
   return (
-    <div className="min-h-screen bg-background">
-      <header className="py-6 px-4 md:px-6 flex justify-between items-center border-b">
-        <h1 className="text-2xl font-bold">Your Name</h1>
-        <nav>
-          <ul className="flex space-x-4">
-            <li><Link href="#projects" className="text-muted-foreground hover:text-primary">Projects</Link></li>
-            <li><Link href="#skills" className="text-muted-foreground hover:text-primary">Skills</Link></li>
-            <li><Link href="#about" className="text-muted-foreground hover:text-primary">About</Link></li>
-          </ul>
-        </nav>
-      </header>
-
-      <main className="container mx-auto px-4 py-8">
-        <section className="text-center py-20">
-          <h2 className="text-4xl font-bold mb-4">Welcome to My Portfolio</h2>
-          <p className="text-xl text-muted-foreground mb-8">I'm a passionate developer creating amazing web experiences</p>
-          <div className="flex justify-center space-x-4">
-            <Button>
-              <Mail className="mr-2 h-4 w-4" /> Contact Me
-            </Button>
-            <Button variant="outline">
-              <Github className="mr-2 h-4 w-4" /> GitHub
-            </Button>
-          </div>
-        </section>
-
-        <section id="projects" className="py-12">
-          <h3 className="text-2xl font-semibold mb-6">Featured Projects</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3].map((project) => (
-              <Card key={project}>
-                <CardHeader>
-                  <CardTitle>Project {project}</CardTitle>
-                  <CardDescription>A brief description of the project</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Image
-                    src={`/placeholder.svg?height=200&width=400`}
-                    alt={`Project ${project}`}
-                    width={400}
-                    height={200}
-                    className="rounded-md"
-                  />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </section>
-
-        <section id="skills" className="py-12">
-          <h3 className="text-2xl font-semibold mb-6">Skills</h3>
-          <div className="flex flex-wrap justify-center gap-4">
-            {['React', 'Next.js', 'TypeScript', 'Tailwind CSS', 'Node.js'].map((skill) => (
-              <span key={skill} className="bg-primary/10 text-primary px-3 py-1 rounded-full">
-                {skill}
-              </span>
-            ))}
-          </div>
-        </section>
-
-        <section id="about" className="py-12">
-          <h3 className="text-2xl font-semibold mb-6">About Me</h3>
-          <div className="flex flex-col md:flex-row items-center gap-8">
-            <Image
-              src="/placeholder.svg?height=200&width=200"
-              alt="Your Name"
-              width={200}
-              height={200}
-              className="rounded-full"
-            />
-            <p className="text-lg text-muted-foreground">
-              Here's a brief introduction about yourself. Highlight your passion for development,
-              your experience, and what drives you in your career. Don't forget to mention any
-              unique skills or perspectives you bring to your work.
-            </p>
-          </div>
-        </section>
-      </main>
-
-      <footer className="py-6 px-4 md:px-6 border-t">
-        <div className="flex justify-between items-center">
-          <p className="text-sm text-muted-foreground">© 2023 Your Name. All rights reserved.</p>
-          <div className="flex space-x-4">
-            <Link href="#" className="text-muted-foreground hover:text-primary">
-              <Github className="h-5 w-5" />
-            </Link>
-            <Link href="#" className="text-muted-foreground hover:text-primary">
-              <Linkedin className="h-5 w-5" />
-            </Link>
-            <Link href="#" className="text-muted-foreground hover:text-primary">
-              <Mail className="h-5 w-5" />
-            </Link>
-          </div>
+    <div className="min-h-screen bg-background p-4">
+      <div className="max-w-md mx-auto">
+        <h1 className="text-2xl font-bold text-center mb-6">TODO App</h1>
+        
+        <div className="flex mb-4">
+          <Input
+            type="text"
+            placeholder="新しいタスクを入力"
+            value={newTodo}
+            onChange={(e) => setNewTodo(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && addTodo()}
+            className="flex-grow mr-2"
+          />
+          <Button onClick={addTodo}>
+            <Plus className="h-4 w-4 mr-2" />
+            追加
+          </Button>
         </div>
-      </footer>
+
+        <div className="flex justify-center space-x-2 mb-4">
+          <Button
+            variant={filter === 'all' ? 'default' : 'outline'}
+            onClick={() => setFilter('all')}
+          >
+            すべて
+          </Button>
+          <Button
+            variant={filter === 'active' ? 'default' : 'outline'}
+            onClick={() => setFilter('active')}
+          >
+            未完了
+          </Button>
+          <Button
+            variant={filter === 'completed' ? 'default' : 'outline'}
+            onClick={() => setFilter('completed')}
+          >
+            完了済み
+          </Button>
+        </div>
+
+        {filteredTodos.map(todo => (
+          <Card key={todo.id} className="mb-2">
+            <CardContent className="p-4 flex items-center">
+              {editingId === todo.id ? (
+                <>
+                  <Input
+                    type="text"
+                    value={editText}
+                    onChange={(e) => setEditText(e.target.value)}
+                    className="flex-grow mr-2"
+                  />
+                  <Button size="icon" onClick={saveEdit} className="mr-2">
+                    <Check className="h-4 w-4" />
+                  </Button>
+                  <Button size="icon" onClick={cancelEdit} variant="outline">
+                    <X className="h-4 w-4" />
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <input
+                    type="checkbox"
+                    checked={todo.completed}
+                    onChange={() => toggleTodo(todo.id)}
+                    className="mr-2"
+                  />
+                  <span className={`flex-grow ${todo.completed ? 'line-through text-muted-foreground' : ''}`}>
+                    {todo.text}
+                  </span>
+                  <Button size="icon" onClick={() => startEditing(todo.id, todo.text)} className="mr-2">
+                    <Edit2 className="h-4 w-4" />
+                  </Button>
+                  <Button size="icon" onClick={() => deleteTodo(todo.id)} variant="outline">
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
   )
 }
