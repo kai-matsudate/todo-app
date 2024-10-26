@@ -2,52 +2,49 @@
 
 import { useState, useEffect } from 'react'
 import { Todo } from '@/types/todo'
-import { TodoColumns } from '@/lib/todo_columns'
 import {
   DataGrid,
-  GridToolbar,
-  GridToolbarExport,
   GridToolbarColumnsButton,
   GridToolbarFilterButton,
   GridToolbarDensitySelector,
   GridToolbarContainer,
-  GridToolbarColumns,
   GridRowParams,
   GridColDef,
   GridActionsCellItem,
   GridRowModesModel,
   GridRowModes,
+  GridRowId,
 } from '@mui/x-data-grid'
 import { jaJP } from '@mui/material/locale';
-import { TextField } from '@mui/material'
-import { Button } from '@mui/material'
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-import SvgIcon from '@mui/material/SvgIcon';
+import { TextField, Button, ThemeProvider, createTheme } from '@mui/material'
 import EditIcon from '@mui/icons-material/Edit';
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
+import { v4 as uuidv4 } from 'uuid'; // UUIDを使用
 
 export default function HomePage() {
   const [todos, setTodos] = useState<Todo[]>([])
   const [newTodoTitle, setNewTodoTitle] = useState<string>('')
-  // 行モードのモデル
   const [rowModeModel, setRowModeModel] = useState<GridRowModesModel>({});
 
-  // ダミーデータを追加
+  // ダミーデータを追加（APIの代わりに使用）
   useEffect(() => {
-    setTodos([
-      { id: 1, title: "Learn React", completed: false, createdAt: new Date(), dueOn: new Date() },
-      { id: 2, title: "Learn Next.js", completed: false, createdAt: new Date(), dueOn: new Date() },
-      { id: 3, title: "Build a project", completed: false, createdAt: new Date(), dueOn: new Date() },
-    ])
-  }, [])
+    async function fetchData() {
+      setTodos([
+        { id: uuidv4(), title: "Learn React", completed: false, createdAt: new Date(), dueOn: new Date() },
+        { id: uuidv4(), title: "Learn Next.js", completed: false, createdAt: new Date(), dueOn: new Date() },
+        { id: uuidv4(), title: "Build a project", completed: false, createdAt: new Date(), dueOn: new Date() },
+      ]);
+    }
+    fetchData();
+  }, []);
 
   const addTodo = () => {
     if(newTodoTitle === '') return
 
     const newTodo: Todo = {
-      id: todos.length + 1,
+      id: uuidv4(),
       title: newTodoTitle,
       completed: false,
       createdAt: new Date(),
@@ -67,41 +64,30 @@ export default function HomePage() {
     )
   }
 
-  // アイコンをクリックしたときの処理
+  // 編集モードに入る
   const toggleRowModeEdit = (params: GridRowParams) => (event: React.MouseEvent) => {
     event.stopPropagation();
     const id = params.id;
 
-    // 行モードを切り替える
-    setRowModeModel({
-      // スプレッド構文で既存の行モードを展開
-      ...rowModeModel,
-      [id]: {
-        // 指定の行のモードを編集モードに変更
-        mode: GridRowModes.Edit,
-      }
-    }
-    )
+    // 状態を効率的に更新
+    setRowModeModel((prevModel) => ({
+      ...prevModel,
+      [id]: { mode: GridRowModes.Edit }
+    }));
   };
 
-  // アイコンをクリックしたときの処理
+  // 閲覧モードに入る
   const toggleRowModeView = (params: GridRowParams) => (event: React.MouseEvent) => {
     event.stopPropagation();
     const id = params.id;
 
-    // 行モードを切り替える
-    setRowModeModel({
-      // スプレッド構文で既存の行モードを展開
-      ...rowModeModel,
-      [id]: {
-        // 指定の行のモードを編集モードに変更
-        mode: GridRowModes.View,
-      }
-    }
-    )
+    setRowModeModel((prevModel) => ({
+      ...prevModel,
+      [id]: { mode: GridRowModes.View }
+    }));
   };
 
-  const deleteTodo = (id: number) => () => {
+  const deleteTodo = (id: GridRowId) => () => {
     const newTodos = todos.filter(todo => todo.id !== id)
     setTodos(newTodos)
   };
@@ -124,28 +110,26 @@ export default function HomePage() {
       updateTodo(updatedRow); // 行のデータを更新
     }
 
-    // 行モードを View に切り替える
     setRowModeModel((prevModel) => ({
       ...prevModel,
-      [id]: {
-        mode: GridRowModes.View,
-      },
+      [id]: { mode: GridRowModes.View },
     }));
   };
+
   // 表示するアクションを返す関数
   const getDetailAction = (params: GridRowParams) => {
     if(rowModeModel[params.id]?.mode !== GridRowModes.Edit) {
       return [
         <GridActionsCellItem
           key={params.id}
-          icon={<SvgIcon component={EditIcon} />} // アイコンを表示
+          icon={<EditIcon />} // 直接アイコンを使用
           label="編集"
           onClick={toggleRowModeEdit(params)}
           color="success"
         />,
         <GridActionsCellItem
           key={params.id}
-          icon={<SvgIcon component={DeleteIcon} />} // アイコンを表示
+          icon={<DeleteIcon />} // 直接アイコンを使用
           label="削除"
           onClick={deleteTodo(params.id)}
           color="error"
@@ -155,14 +139,14 @@ export default function HomePage() {
       return [
         <GridActionsCellItem
           key={params.id}
-          icon={<SvgIcon component={SaveIcon} />} // アイコンを表示
+          icon={<SaveIcon />} // 直接アイコンを使用
           label="保存"
           onClick={saveTodo(params)}
           color="success"
         />,
         <GridActionsCellItem
           key={params.id}
-          icon={<SvgIcon component={HighlightOffIcon} />} // アイコンを表示
+          icon={<HighlightOffIcon />} // 直接アイコンを使用
           label="キャンセル"
           onClick={toggleRowModeView(params)}
           color="error"
@@ -172,16 +156,16 @@ export default function HomePage() {
   }
 
   const TodoColumns: GridColDef[] = [
-    { field: "title", headerName: "Title", editable: true, width: 150 },
-    { field: "completed", headerName: "Completed", editable: true, width: 150 },
-    { field: "createdAt", headerName: "Created At", width: 110 },
-    { field: "dueOn", headerName: "Due On", editable: true, width: 160 },
+    { field: "title", type: 'string', headerName: "Title", editable: true, width: 150 },
+    { field: "completed", type: 'boolean', headerName: "Completed", editable: true, width: 150 },
+    { field: "createdAt", type: 'dateTime', headerName: "Created At", width: 110 },
+    { field: "dueOn", type: 'date', headerName: "Due On", editable: true, width: 160 },
     {
       field: 'detailAction',
       headerName: '操作',
       width: 100,
       type: 'actions',
-      getActions: (params: GridRowParams) => getDetailAction(params),  // アクションを取得
+      getActions: (params: GridRowParams) => getDetailAction(params),
     },
   ];
 
@@ -202,9 +186,7 @@ export default function HomePage() {
   return (
     // 外枠
     <div className="flex flex-col item-center justify-center gap-4">
-      <div
-        className="flex gap-4"
-      >
+      <div className="flex gap-4">
         <TextField
           id="outlined-basic"
           label="Title"
@@ -216,7 +198,7 @@ export default function HomePage() {
         <Button
           variant="contained"
           color="primary"
-          onClick={() => addTodo()}
+          onClick={addTodo}
         >
           Add
         </Button>
@@ -225,7 +207,6 @@ export default function HomePage() {
         <DataGrid
           rows={todos}
           columns={TodoColumns}
-          color="primary"
           pageSize={5}
           editMode='row'
           rowModesModel={rowModeModel}
