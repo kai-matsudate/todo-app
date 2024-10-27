@@ -10,6 +10,8 @@ services:
       - ./backend/:/app
     networks:
       - dev-network  # ネットワークに接続
+    depends_on:
+      - postgres  # PostgreSQLのコンテナが起動してから起動
   frontend:
     build:
       context: ./frontend
