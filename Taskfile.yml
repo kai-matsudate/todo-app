@@ -1,5 +1,5 @@
 version: '3'
-  
+
 silent: true
 
 tasks:
@@ -15,3 +15,11 @@ tasks:
   down:
     desc: Stop dev server
     cmd: docker compose -f compose-dev.yml down
+  # db-init:
+  #   desc: "Run database migration on Docker container"
+  #   cmds:
+  #     # コンテナを指定して migrate.go を実行する
+  #     - docker-compose run --rm app go run db/migrate.go
+  #   vars:
+  #     DB_CONTAINER: "db"              # 必要に応じてDBのコンテナ名に合わせて変更
+  #     APP_CONTAINER: "app"            # 必要に応じてAppのコンテナ名に合わせて変更

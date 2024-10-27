@@ -30,7 +30,7 @@ services:
       POSTGRES_PASSWORD: dev_password  # PostgreSQLのパスワード
       POSTGRES_DB: dev_db              # デフォルトのデータベース名
     ports:
-      - "5432:5432"  # ホストの5432ポートをコンテナの5432ポートに公開
+      - "5433:5432"  # ホストの5432ポートをコンテナの5432ポートに公開
     volumes:
       - postgres_data:/var/lib/postgresql/data  # データの永続化
     networks:

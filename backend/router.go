@@ -1,12 +1,12 @@
 package main
 
 import (
-	"backend/graph" // GraphQL のパスを適宜修正
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	"github.com/kai-matsudate/todo-app/backend/graph"
 	"net/http"
 )
 

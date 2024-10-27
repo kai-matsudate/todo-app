@@ -13,6 +13,8 @@ func main() {
 	// データベース接続を初期化
 	db.InitDatabase()
 
+	db.Migrate()
+
 	// 環境変数からポートを取得
 	port := os.Getenv("PORT")
 	if port == "" {
