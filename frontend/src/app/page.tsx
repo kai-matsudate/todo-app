@@ -207,7 +207,6 @@ export default function HomePage() {
         <DataGrid
           rows={todos}
           columns={TodoColumns}
-          pageSize={5}
           editMode='row'
           rowModesModel={rowModeModel}
           onRowModesModelChange={(newModel) => setRowModeModel(newModel)}
