@@ -1,6 +1,9 @@
 package main
 
 import (
+	"backend/graph" // GraphQL のパスを適宜修正
+	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
@@ -8,16 +11,15 @@ import (
 )
 
 var allowedOrigins = []string{
-	// frontendURL
 	"http://localhost:3080",
-	// selfURL
 	"http://localhost:8080",
 }
 
 func NewRouter() *chi.Mux {
 	r := chi.NewRouter()
+
+	// Middleware
 	r.Use(
-		// corsの行は上の方に書いておかないと、後述がCORSエラーになる。
 		cors.Handler(cors.Options{
 			AllowedOrigins: allowedOrigins,
 			AllowedMethods: []string{
@@ -37,8 +39,10 @@ func NewRouter() *chi.Mux {
 		middleware.Heartbeat("/health"),
 	)
 
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello World!"))
-	})
+	// Define GraphQL server
+	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{}}))
+	r.Handle("/", playground.Handler("GraphQL playground", "/query"))
+	r.Handle("/query", srv)
+
 	return r
 }

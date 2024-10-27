@@ -8,6 +8,8 @@ services:
       - 8080:8080
     volumes:
       - ./backend/:/app
+    networks:
+      - dev-network  # ネットワークに接続
   frontend:
     build:
       context: ./frontend
@@ -16,3 +18,26 @@ services:
       - 3080:3080
     volumes:
       - ./frontend/:/app
+    networks:
+      - dev-network  # ネットワークに接続
+  postgres:
+    image: postgres:15-alpine  # PostgreSQLのバージョンを指定
+    container_name: dev-postgres  # コンテナ名を設定
+    environment:
+      POSTGRES_USER: dev_user          # PostgreSQLのユーザー名
+      POSTGRES_PASSWORD: dev_password  # PostgreSQLのパスワード
+      POSTGRES_DB: dev_db              # デフォルトのデータベース名
+    ports:
+      - "5432:5432"  # ホストの5432ポートをコンテナの5432ポートに公開
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  # データの永続化
+    networks:
+      - dev-network  # ネットワークに接続
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  dev-network:
+    driver: bridge
