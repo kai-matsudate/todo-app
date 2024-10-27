@@ -1,0 +1,17 @@
+version: '3'
+  
+silent: true
+
+tasks:
+  default:
+    aliases:
+      - list
+    desc: List all tasks
+    cmd: task -l
+
+  up:
+    desc: Start dev server
+    cmd: docker compose -f compose-dev.yml up -d
+  down:
+    desc: Stop dev server
+    cmd: docker compose -f compose-dev.yml down
